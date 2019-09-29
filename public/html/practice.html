@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <script src="https://unpkg.com/vue"></script>
+    <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.3/umd/popper.min.js" integrity="sha384-vFJXuSJphROIrBnz7yo7oB41mKfc8JzQZiCq4NCceLEaO4IHwicKwpJf9c9IpFgh" crossorigin="anonymous"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/js/bootstrap.min.js" integrity="sha384-alpBpkh1PFOepccYVYDB4do5UnbKysX5WZXm3XxPqe5iKTfUKjNkCk9SaVuEZflJ" crossorigin="anonymous"></script>
+    <script src="https://unpkg.com/web-audio-daw@2.6.1/build/wad.js"></script>
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0-beta.2/css/bootstrap.min.css" integrity="sha384-PsH8R72JQ3SOdhVi3uxftmaW6Vc51MKb0q5P2rRUpPvrszuE4W1povHYgTpBfshb" crossorigin="anonymous">
+    <link rel="stylesheet" href="/css/practice.css">
+    <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css">
+    <link rel="shortcut icon" href="/images/specialicon.ico" type="image/x-icon" />
+    <title>Tone Dev</title>
+  </head>
+  <body>
+    <div id="practice">
+      <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarSupportedContent">
+          <ul class="navbar-nav mr-auto">
+            <li class="nav-item">
+              <a class="nav-link" href="/">Home <span class="sr-only">(current)</span></a>
+            </li>
+            <li class="nav-item active">
+              <a class="nav-link" href="/practice">Practice</a>
+            </li>
+          </ul>
+        </div>
+      </nav>
+      <br>
+      <br>
+      <br>
+      <br>
+      <div class="container">
+        <!-- HEADER -->
+        <div class="row">
+          <h1 class="mt-5 mx-auto" id="header">Level up your tone! </h1>
+        </div>
+        <!-- SUBHEAD -->
+        <div class="row">
+          <h5 class="mt-5 mx-auto" id="words">Click below to hear a random note, then try to match the pitch with your voice</h5>
+        </div>
+        <!-- SINGING NOW -->
+        <div class="row text-center mt-5" v-if="isDetecting">
+          <div class="col-12">
+            <h6>Notes you are singing:</h6>
+          </div>
+          <div class="col-12">
+            <h3 id="pitch">{{pitch}}</h3>
+          </div>
+        </div>
+        <div class="row">
+          <div class="col-4 text-right">
+            <button v-if="practicing" type="button" class="btn btn-secondary" v-on:click="startDetection"><i class="fa fa-music fa-lg" aria-hidden="true"></i>  New note
+            </button>
+          </div>
+        </div>
+        <div class="row text-center mt-5" id="startOuter">
+          
+          <!-- HEAR AGAIN -->
+          <div class="col-4 order-3" v-if="isDetecting">
+            <span><h6>Click to hear target note again:</h6></span>
+            <button type="button"
+            class="btn btn-secondary"
+            v-if="suggestedPitch"
+            v-on:click="playSuggestedPitch"
+            >
+            Target note: <strong>{{suggestedPitch}}</strong>
+          </button></div>
+          <div class="col-4" v-else></div>
+          <div class="col-4 order-2" v-bind:class="isDetecting ? 'text-right' : 'text-center'">
+            <!-- START -->
+            <button v-if="!practicing" type="button" class="btn btn-secondary" id="start" v-on:click="startDetection">
+            <i class="fa fa-play" aria-hidden="true"></i>  Start
+            </button>
+            <!-- PAUSE -->
+            <button v-if="practicing" type="button" class="btn btn-secondary" id="pause" v-on:click="stopFeedback">
+            <i class="fa fa-pause" aria-hidden="true"></i>  Pause
+            </button>
+          </div>
+          
+          <!-- ACCURACY BAR -->
+          <div class="col-4 text-center order-12" id="visualizer" v-if="practicing">
+            <div class="one80" style="width: 23px; height: 200px; border:1px solid lightgrey; position: relative">
+              <div style="width: 21px;  height: 200px; position: absolute; left:0; top: 200" id="pitchBar"></div>
+              <div style="position: absolute; left: 50%; transform: translateX(-50%);" id="indicator">
+              </div>
+            </div>
+            <span style="margin-left:-325px">{{high_low}} </span>
+          </div>
+          <div class="modal fade" id="exampleModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+            <div class="modal-dialog" role="document">
+              <div class="modal-content">
+                <div class="modal-header">
+                  <h5 class="modal-title" id="exampleModalLabel"></h5>
+                  <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+                  <span aria-hidden="true">&times;</span>
+                  </button>
+                </div>
+                <div class="modal-body">
+                  <h1 class="text-center" v-if="switchEncouragers">{{encourager}}</h1>
+                </div>
+                <div class="modal-footer">
+                  <button type="button" class="btn btn-secondary" data-dismiss="modal">Click to continue</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <script src="/js/practice.js"></script>
+  </body>
+</html>
